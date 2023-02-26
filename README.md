@@ -1,2 +1,3 @@
 # assignment04
-Repository for Data Science assignment 4
+Data Visualization Assignment 04
+Authors: Keegan Brown, Patrick Jones

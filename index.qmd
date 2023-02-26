@@ -1,0 +1,33 @@
+---
+title: "Assignment 04"
+authors: Keegan Brown, Patrick Jones
+format: html
+editor: visual
+---
+
+#Loading packages and data
+```{r}
+
+```
+
+Paragraph describing the data here
+
+#Visualization 1
+```{r}
+
+```
+
+#Visualization 2
+```{r}
+
+```
+
+#Visualization 3
+```{r}
+
+```
+
+#Visualization 4
+```{r}
+
+```
