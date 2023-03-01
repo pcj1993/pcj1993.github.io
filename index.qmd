@@ -9,6 +9,12 @@ editor: visual
 #Loading packages and data
 
 ```{r}
+library(tidyverse)
+library(haven)
+
+
+#loading 
+data <- read_xpt("LLCP2021.XPT ")
 
 ```
 
