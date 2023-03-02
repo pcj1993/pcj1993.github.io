@@ -4,6 +4,8 @@ authors: Keegan Brown, Patrick Jones
 format: html
 editor: visual
     self-contained: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 #Loading packages and data
@@ -11,6 +13,8 @@ editor: visual
 ```{r}
 library(tidyverse)
 library(haven)
+library(sf)
+library(tigris)
 
 
 #loading 
@@ -21,9 +25,329 @@ data <- read_xpt("LLCP2021.XPT ")
 Paragraph describing the data here
 
 #Visualization 1
+##reviewing employment status and ACE scores 
+Adverse childhood experiences are strong predictors of bad health outcomes, increased incarceration rate, and lower education outcomes. The greater number of reported ACE experiences are associated with worse employment outcomes. Using a (logit/probit model, reminder to review for cat variable), we assess the impact of increased ACE experiences on the likelihood that an indivdual is unemployed. 
 
+### Recoding Employment and ACE Data 
 ```{r}
 
+### employment variable 
+#EMPLOY1 -
+## 1 = employed 4 waged
+## 2 = self employed
+## 3 = unemployed 1+ year
+## 4 = unemployed less than 1 year
+## 5 = homemaker - coding as working
+## 6 = student - coding as working
+## 7 = retired - dropping from dataset 
+## 8 = unable to work - coding as unemployed
+## 9 = refused - dropping from dataset 
+## n/a = missing - dropping from dataset 
+### ace variables 
+
+g1data <- data%>%
+  mutate(
+    employ_dum = case_when(
+      EMPLOY1 %in% c(1,2,5,6) ~ "1",
+      EMPLOY1 %in% c(3,4,8) ~ "0"
+    )
+  )
+
+g1data <- g1data%>%
+  filter(!(EMPLOY1 == 9), 
+         !(EMPLOY1 == 7),
+         !(is.na(EMPLOY1)))
+
+
+### ACE Variables 
+##ACEDEPRS 
+#1 = yes 
+#2 = no
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_deprs = case_when(
+      ACEDEPRS %in% c(1) ~ "1",
+      ACEDEPRS %in% c(2,7) ~ "0",
+      is.na(ACEDEPRS) ~ "0"
+    )
+  )
+
+
+#ACEDRINK 
+#1 = yes 
+#2 = no
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_drink = case_when(
+      ACEDRINK %in% c(1) ~ "1",
+      ACEDRINK %in% c(2,7) ~ "0",
+      is.na(ACEDRINK) ~ "0"
+    )
+  )
+
+#ACEDRUGS
+#1 = yes 
+#2 = no
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_drug= case_when(
+      ACEDRUGS %in% c(1) ~ "1",
+      ACEDRUGS %in% c(2,7) ~ "0",
+      is.na(ACEDRUGS) ~ "0"
+    )
+  )
+
+
+#ACEPRISN 
+#1 = yes 
+#2 = no
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_prisn = case_when(
+      ACEPRISN %in% c(1) ~ "1",
+      ACEPRISN %in% c(2,7) ~ "0",
+      is.na(ACEPRISN) ~ "0"
+    )
+  )
+
+
+#ACEDIVRC 
+#1 = yes 
+#2 = no
+#7 = don't know not sure - coding as no
+#8 = parents not married - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_div = case_when(
+      ACEDIVRC %in% c(1) ~ "1",
+      ACEDIVRC %in% c(2,7,8) ~ "0",
+      is.na(ACEDIVRC) ~ "0"
+    )
+  )
+
+
+#ACEPUNCH
+#1 = never 
+#2 = once
+#3 = more than once 
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_punch = case_when(
+      ACEPUNCH %in% c(1,7) ~ "0",
+      ACEPUNCH %in% c(2,3) ~ "1",
+      is.na(ACEPUNCH) ~ "0"
+    )
+  )
+
+#ACEHURT1 
+#1 = never 
+#2 = once
+#3 = more than once 
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_hurt = case_when(
+      ACEHURT1 %in% c(1,7) ~ "0",
+      ACEHURT1 %in% c(2,3) ~ "1",
+      is.na(ACEHURT1) ~ "0"
+    )
+  )
+
+
+#ACESWEAR
+#1 = never 
+#2 = once
+#3 = more than once 
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+
+g1data <- g1data%>%
+  mutate(
+    ace_sweat = case_when(
+      ACESWEAR %in% c(1,7) ~ "0",
+      ACESWEAR %in% c(2,3) ~ "1",
+      is.na(ACESWEAR) ~ "0"
+    )
+  )
+
+#ACETOUCH 
+#1 = never 
+#2 = once
+#3 = more than once 
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_touch = case_when(
+      ACETOUCH %in% c(1,7) ~ "0",
+      ACETOUCH %in% c(2,3) ~ "1",
+      is.na(ACETOUCH) ~ "0"
+    )
+  )
+
+#ACETTHEM
+#1 = never 
+#2 = once
+#3 = more than once 
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_tthem = case_when(
+      ACETTHEM %in% c(1,7) ~ "0",
+      ACETTHEM %in% c(2,3) ~ "1",
+      is.na(ACETTHEM) ~ "0"
+    )
+  )
+
+#ACEHVSEX 
+#1 = never 
+#2 = once
+#3 = more than once 
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_hvsex = case_when(
+      ACEHVSEX %in% c(1,7) ~ "0",
+      ACEHVSEX %in% c(2,3) ~ "1",
+      is.na(ACEHVSEX) ~ "0"
+    )
+  )
+
+#ACEADSAF 
+#1 = never 
+#2 = a little of the timne - coding as yes
+#3 = some of the time - coding as yes
+#4 - most of the time - coding as yes
+#5 - all of the time - coding as yes
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_adsaf = case_when(
+      ACEADSAF %in% c(1,7) ~ "0",
+      ACEADSAF %in% c(2,3,4,5) ~ "1",
+      is.na(ACEADSAF) ~ "0"
+    )
+  )
+
+
+#ACEADNED 
+#1 = never 
+#2 = a little of the timne - coding as yes
+#3 = some of the time - coding as yes
+#4 - most of the time - coding as yes
+#5 - all of the time - coding as yes
+#7 = don't know not sure - coding as no
+#9 = refused - dropping 
+#blank - dropping
+
+g1data <- g1data%>%
+  mutate(
+    ace_adned = case_when(
+      ACEADNED %in% c(1,7) ~ "0",
+      ACEADNED %in% c(2,3,4,5) ~ "1",
+      is.na(ACEADNED) ~ "0"
+    )
+  )
+
+## drops this looks wrong right now
+
+
+
+         
+acevars_list <- c("ACEDEPRS", "ACEDRINK", "ACEDRUGS", "ACEDIVRC", "ACEPRISN",
+                  "ACEPUNCH", "ACEHURT1", "ACESWEAR", "ACETOUCH", "ACETTHEM", 
+                  "ACEHVSEX", "ACEADSAF", "ACEADNED")
+
+
+
+
+
+```
+
+###test code block
+```{r}
+
+g1data%>%
+  count(ACEDEPRS == 9)
+
+g1data <- g1data%>%
+  filter(ace_deprs != 9) 
+
+
+
+         ACEDRINK != 9 |
+         ACEDRUGS != 9 |
+         ACEPRISN != 9 |
+         ACEDIVRC != 9 |
+         ACEPUNCH != 9 |
+         ACEHURT1 != 9 | 
+         ACESWEAR != 9 |
+         ACETOUCH != 9 |
+         ACETTHEM != 9 |
+         ACEHVSEX != 9 |
+         ACEADSAF != 9 |
+         ACEADNED != 9)
+
+for (i in acevars_list) {
+  g1data <- filter(g1data, !!sym(i) != 9)
+}
+
+
+g1data <- data%>%
+  filter(!(ACEDEPRS == 0) 
+         !(ACEDRINK == 9), 
+         !(ACEDRUGS == 9), 
+         !(ACEPRISN == 9), 
+         !(ACEDIVRC == 9),
+         !(ACEPUNCH == 9),
+         !(ACEHURT1 == 9), 
+         !(ACESWEAR == 9),
+         !(ACETOUCH == 9),
+         !(ACETTHEM == 9), 
+         !(ACEHVSEX == 9),
+         !(ACEADSAF == 9),
+         !(ACEADNED == 9)
+  )   
+         
 ```
 
 #Visualization 2
