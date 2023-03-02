@@ -191,7 +191,7 @@ g1data <- g1data%>%
 
 g1data <- g1data%>%
   mutate(
-    ace_sweat = case_when(
+    ace_swear = case_when(
       ACESWEAR %in% c(1,7) ~ "0",
       ACESWEAR %in% c(2,3) ~ "1",
       is.na(ACESWEAR) ~ "0"
@@ -288,17 +288,32 @@ g1data <- g1data%>%
     )
   )
 
-## drops this looks wrong right now
+## drops 
 
+g1data <- g1data%>%
+  filter(ace_deprs != 9,
+         ace_drink != 9,
+         ace_drug != 9,
+         ace_prisn != 9, 
+         ace_div != 9,
+         ace_punch !=9,
+         ace_hurt != 9,
+         ace_swear != 9,
+         ace_touch != 9, 
+         ace_tthem != 9,
+         ace_hvsex != 9,
+         ace_adsaf != 9,
+         ace_adned != 9
+  )
 
+###Ace count score 
+acecount <- g1data%>%
+  
 
-         
-acevars_list <- c("ACEDEPRS", "ACEDRINK", "ACEDRUGS", "ACEDIVRC", "ACEPRISN",
-                  "ACEPUNCH", "ACEHURT1", "ACESWEAR", "ACETOUCH", "ACETTHEM", 
-                  "ACEHVSEX", "ACEADSAF", "ACEADNED")
-
-
-
+ggplot(data = g1data)+
+  geom_line(mapping = aes())+
+  geom_point() 
+  
 
 
 ```
@@ -306,48 +321,10 @@ acevars_list <- c("ACEDEPRS", "ACEDRINK", "ACEDRUGS", "ACEDIVRC", "ACEPRISN",
 ###test code block
 ```{r}
 
-g1data%>%
-  count(ACEDEPRS == 9)
 
-g1data <- g1data%>%
-  filter(ace_deprs != 9) 
+  
 
-
-
-         ACEDRINK != 9 |
-         ACEDRUGS != 9 |
-         ACEPRISN != 9 |
-         ACEDIVRC != 9 |
-         ACEPUNCH != 9 |
-         ACEHURT1 != 9 | 
-         ACESWEAR != 9 |
-         ACETOUCH != 9 |
-         ACETTHEM != 9 |
-         ACEHVSEX != 9 |
-         ACEADSAF != 9 |
-         ACEADNED != 9)
-
-for (i in acevars_list) {
-  g1data <- filter(g1data, !!sym(i) != 9)
-}
-
-
-g1data <- data%>%
-  filter(!(ACEDEPRS == 0) 
-         !(ACEDRINK == 9), 
-         !(ACEDRUGS == 9), 
-         !(ACEPRISN == 9), 
-         !(ACEDIVRC == 9),
-         !(ACEPUNCH == 9),
-         !(ACEHURT1 == 9), 
-         !(ACESWEAR == 9),
-         !(ACETOUCH == 9),
-         !(ACETTHEM == 9), 
-         !(ACEHVSEX == 9),
-         !(ACEADSAF == 9),
-         !(ACEADNED == 9)
-  )   
-         
+     
 ```
 
 #Visualization 2
