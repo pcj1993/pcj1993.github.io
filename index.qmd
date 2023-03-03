@@ -3,7 +3,7 @@ title: "Assignment 04"
 authors: Keegan Brown, Patrick Jones
 format: html
 editor: visual
-    self-contained: true
+  self-contained: true
 editor_options: 
   chunk_output_type: console
 ---
@@ -24,11 +24,10 @@ data <- read_xpt("LLCP2021.XPT ")
 
 Paragraph describing the data here
 
-#Visualization 1
-##reviewing employment status and ACE scores 
-Adverse childhood experiences are strong predictors of bad health outcomes, increased incarceration rate, and lower education outcomes. The greater number of reported ACE experiences are associated with worse employment outcomes. Using a (logit/probit model, reminder to review for cat variable), we assess the impact of increased ACE experiences on the likelihood that an indivdual is unemployed. 
+#Visualization 1 ##reviewing employment status and ACE scores Adverse childhood experiences are strong predictors of bad health outcomes, increased incarceration rate, and lower education outcomes. The greater number of reported ACE experiences are associated with worse employment outcomes. Using a (logit/probit model, reminder to review for cat variable), we assess the impact of increased ACE experiences on the likelihood that an indivdual is unemployed.
 
-### Recoding Employment and ACE Data 
+### Recoding Employment and ACE Data
+
 ```{r}
 
 ### employment variable 
@@ -319,10 +318,9 @@ ggplot(data = g1data)+
 ```
 
 ###test code block
+
 ```{r}
 
-
-  
 
      
 ```
@@ -336,11 +334,112 @@ ggplot(data = g1data)+
 #Visualization 3
 
 ```{r}
+g3data <- data
 
+g3data %>%
+  filter(PHYSHLTH <= 30) %>%
+  filter(INCOME3 <= 11) %>%
+  filter(`_AGEG5YR` <= 13) %>%
+  ggplot(mapping = aes(x = `_AGEG5YR`, y = INCOME3, fill = PHYSHLTH)) +
+geom_tile() +
+  coord_cartesian(xlim = c(1, 13), ylim = c(1, 11)) +
+  scale_fill_continuous(
+    low = "#1097b8", 
+  high = "#b83110", 
+  name = "Days of poor physical\nhealth per month") +
+  scale_y_continuous(breaks = c(1:11),
+                   labels = c("Less than $10,000",
+                              "$10,000 - $15,000",
+                              "$15,000 - $20,000",
+                              "$20,000 - $25,000",
+                              "$25,000 - $35,000",
+                              "$35,000 - $50,000",
+                              "$50,000 - $75,000",
+                              "$75,000 - $100,000",
+                              "$100,000 - $150,000",
+                              "$150,000 - $200,000",
+                              "$200,000 or more")) +
+  scale_x_continuous(breaks = c(1:13),
+                     labels = c("18 - 24",
+                                "25 - 29",
+                                "30 - 34",
+                                "35 - 39",
+                                "40 - 44",
+                                "45 - 49",
+                                "50 - 54",
+                                "55 - 59",
+                                "60 - 64",
+                                "65 - 69",
+                                "70 - 74",
+                                "75 - 79",
+                                "80 or older")) +
+  labs(title = "Physical health among age and income groups, U.S. adults, 2021",
+       subtitle = "Young, wealthy Americans report highest levels of\nphysical health, while poor, elderly Americans report the lowest",
+       caption = "Behavioral Risk Factor Surveillance System, 2021") +
+  xlab("Age") +
+  ylab("Income") +
+  theme_minimal() +
+  theme(text = element_text(family = "Helvetica"),
+        axis.text.x = element_text(
+          angle = 45,
+          vjust = 1,
+          hjust = 1
+        ),
+        axis.title.y = element_text(
+          angle = 0,
+          hjust = 0,
+          vjust = 1
+        ),
+        axis.title.x = element_text(
+          hjust = .5,
+          vjust = 1
+        ))
+  
 ```
 
 #Visualization 4
 
 ```{r}
+g4data <- data
+
+g4data <- g4data %>%
+  filter(MENTHLTH <= 30) %>%
+  group_by(INCOME3) %>%
+  summarize(mean_MENTHLTH = mean(MENTHLTH))
+
+g4data %>%
+  filter(INCOME3 < 77) %>%
+  ggplot(aes(x = INCOME3, 
+             y = mean_MENTHLTH,
+             fill = mean_MENTHLTH)) +
+  geom_col() +
+  scale_fill_continuous(low = "#1097b8", 
+                        high = "#b83110",
+                        guide = "none") +
+  scale_x_continuous(breaks = c(1:11),
+                   labels = c("Less than $10,000",
+                              "$10,000 - $15,000",
+                              "$15,000 - $20,000",
+                              "$20,000 - $25,000",
+                              "$25,000 - $35,000",
+                              "$35,000 - $50,000",
+                              "$50,000 - $75,000",
+                              "$75,000 - $100,000",
+                              "$100,000 - $150,000",
+                              "$150,000 - $200,000",
+                              "$200,000 or more")) +
+  coord_flip() +
+  labs(title = "Mental health by income groups, U.S. adults, 2021",
+       subtitle = "Poor Americans report more days of mental distress than wealthy Americans",
+       caption = "Behavioral Risk Factor Surveillance System, 2021",) +
+  xlab("Annual income") +
+  ylab("Average days of mental distress per month") +
+  theme_minimal() +
+  theme(text = element_text(family = "Helvetica"),
+        axis.title.y = element_text(angle = 0, 
+                                    hjust = 1,
+                                     vjust = 1,
+                                    )) 
+  
 
 ```
