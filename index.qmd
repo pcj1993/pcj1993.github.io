@@ -3,9 +3,11 @@ title: "Assignment 04"
 authors: Keegan Brown, Patrick Jones
 format: html
 editor: visual
-  self-contained: true
 editor_options: 
   chunk_output_type: console
+output:
+  html_document:
+    self_contained: true
 ---
 
 #Loading packages and data
@@ -15,7 +17,9 @@ library(tidyverse)
 library(haven)
 library(sf)
 library(tigris)
-library (foreach)
+library(tidycensus)
+library(RColorBrewer)
+
 
 
 #loading 
@@ -329,9 +333,6 @@ g1data <- g1data %>%
 g1data <- g1data %>%
    mutate(avurate = (1 - mean(employ_dum, na.rm = TRUE)))
 
-g1data$avurate
-
-
                             
 #plot 
 plot1 <- ggplot(data = g1data,
@@ -376,9 +377,72 @@ plot1 +
 
 
 #Visualization 2
-
+Along with ACEs, mental illness is strongly associated with poor employment and quality of life outcomes. Increased rates of depressive disorders can have significant impacts on a states' economy. In this graph, the average rate of reported diagnoses of depressive disorders are mapped by state. Oregon appears to have the highest diagnosis rates of depression, while North and Sotuh Dakota have the lowest. 
 ```{r}
 
+
+g2data <- data
+
+
+
+g2data<- g2data%>%
+  mutate(state = `_STATE`)
+
+#depression recode
+
+g2data <- g2data %>%
+  mutate(depr = case_when(
+    ADDEPEV3 == 1 ~ 1,
+    ADDEPEV3 == 2 ~ 0, 
+    .default = NA
+    )
+  )
+    
+
+
+#loading greater 48 polygon data
+statesdata <- tigris::states(cb = TRUE, progress_bar = FALSE) %>%
+  filter(!STATEFP %in% c("78", "69", "66", "60", "72", "02", "15"))
+
+
+g2data <- g2data%>%
+  group_by(state)%>%
+  mutate(mdepr = mean(depr, na.rm = TRUE)
+  )
+
+statesdata <- statesdata %>%
+  mutate(STATEFP = as.double(STATEFP))
+
+statesdata <- statesdata %>% 
+  left_join(g2data, by = c("STATEFP" = "state")) %>%
+  mutate(drate = if_else(!is.na(mdepr), mdepr, NA_real_))
+
+statesdata <- statesdata %>%
+  select("STATEFP", "STATENS", "AFFGEOID", "GEOID", "STUSPS",
+             "NAME", "LSAD", "ALAND", "AWATER", "drate")
+
+
+statesdata <- statesdata[!duplicated(statesdata$STATENS),]
+
+
+
+
+statesdata %>%
+  ggplot(mapping = aes(fill = drate)) +
+  geom_sf() +
+  scale_fill_continuous(labels = scales::percent,
+    low = "#1097b8", 
+    high = "#b83110") +
+  theme_void() +  
+  labs(title = "Depression by State, U.S. Adults, 2021",
+       subtitle = "There are stark differences in depression diagnosis rates across the country",
+       caption = "Behavioral Risk Factor Surveillance System, 2021") +
+  theme(text = element_text(family = "Helvetica"),
+        plot.title = element_text(vjust = 6),
+        plot.subtitle = element_text(vjust = 5))+
+  guides(fill = guide_colorbar(title = "Diagnosis Rate"))
+
+  
 ```
 
 #Visualization 3
