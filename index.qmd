@@ -15,6 +15,7 @@ library(tidyverse)
 library(haven)
 library(sf)
 library(tigris)
+library (foreach)
 
 
 #loading 
@@ -24,9 +25,10 @@ data <- read_xpt("LLCP2021.XPT ")
 
 Paragraph describing the data here
 
-#Visualization 1 ##reviewing employment status and ACE scores Adverse childhood experiences are strong predictors of bad health outcomes, increased incarceration rate, and lower education outcomes. The greater number of reported ACE experiences are associated with worse employment outcomes. Using a (logit/probit model, reminder to review for cat variable), we assess the impact of increased ACE experiences on the likelihood that an indivdual is unemployed.
+#Visualization 1 
+This line graph plots employment status with the quantity of reported Adverse Childhood Experiences (ACE). ACEs are strong predictors of poor health outcomes, increased incarceration rate, and lower education outcomes. Here, the unemployment is shown to sharply rise as the ACE score increases, suggesting appropriate intervention at a young age can have positive benefits for future labor market health. 
 
-### Recoding Employment and ACE Data
+
 
 ```{r}
 
@@ -46,11 +48,13 @@ Paragraph describing the data here
 
 g1data <- data%>%
   mutate(
-    employ_dum = case_when(
+    employ_dum = as.numeric(
+      case_when(
       EMPLOY1 %in% c(1,2,5,6) ~ "1",
       EMPLOY1 %in% c(3,4,8) ~ "0"
     )
   )
+)
 
 g1data <- g1data%>%
   filter(!(EMPLOY1 == 9), 
@@ -306,24 +310,70 @@ g1data <- g1data%>%
   )
 
 ###Ace count score 
-acecount <- g1data%>%
-  
+g1data <- g1data %>%
+  mutate(ace_count = rowSums(
+    select(., ace_deprs:ace_adned) == 1))
 
-ggplot(data = g1data)+
-  geom_line(mapping = aes())+
-  geom_point() 
-  
+g1data <- g1data %>%
+  mutate(ace_count = as.numeric(ace_count))
 
+
+g1data <- g1data %>%
+  group_by(ace_count)%>%
+   mutate(urate = (1 - mean(employ_dum, na.rm = TRUE)))%>%
+  ungroup()
+
+
+
+
+g1data <- g1data %>%
+   mutate(avurate = (1 - mean(employ_dum, na.rm = TRUE)))
+
+g1data$avurate
+
+
+                            
+#plot 
+plot1 <- ggplot(data = g1data,
+       mapping = aes(x= ace_count, y = urate))+
+  geom_line()+
+  geom_point()+ 
+  scale_y_continuous(labels = scales::percent)+
+    labs(title = "Adverse Childhood Experience Score and Unemployment Rate",
+       subtitle = "Adult unemployment rates sharply increase as ACE score rises",
+       caption = "Behavioral Risk Factor Surveillance System, 2021") +
+  xlab("ACE Score") +
+  ylab("Unemployment Rate") +
+  theme_minimal() +
+  theme(text = element_text(family = "Helvetica"),
+        axis.text.x = element_text(
+          angle = 45,
+          vjust = 1,
+          hjust = 1
+        ),
+        axis.title.y = element_text(
+          angle = 90
+          ),
+        axis.title.x = element_text(
+          hjust = .5,
+          vjust = 1
+        ))+
+  geom_line(mapping = aes(y= avurate),
+    color = "#00A087B2",
+    linewidth = 1.25
+  )
+
+plot1 +
+  annotate("text",
+           x = 10,
+           y = 0.17, 
+           label = "(Sample Mean = 15.6%)",
+           size = 3)
+  
+  
 
 ```
 
-###test code block
-
-```{r}
-
-
-     
-```
 
 #Visualization 2
 
@@ -333,6 +383,7 @@ ggplot(data = g1data)+
 
 #Visualization 3
 
+This heatmap shows that poor, elderly Americans experience more days of poor physical health than any other income and age group. It is expected that the old have worse physical health than the young, comparing elderly Americans of higher and lower incomes reveals that poverty intensifies the negative effects of aging on health. The starkness of this inequality emphasizes the need for targeted aid to the elderly poor, a population that is uniquely vulnerable in the United States. The Social Security and Medicare systems are pre-existing mechanisms that could be applied towards reducing health inequities among our nations’ seniors.
 ```{r}
 g3data <- data
 
@@ -398,6 +449,8 @@ geom_tile() +
 ```
 
 #Visualization 4
+
+This bar chart shows a negative association between income and mental health. Interestingly, the average reported days of mental distress increase fairly constantly as income decreases. This indicates that increased income leads to improved mental health outcomes regardless of ones’ current income. Boosting middle class incomes increases happiness about as much as increasing working class incomes, an effect that should be considered when crafting wage policy.
 
 ```{r}
 g4data <- data
