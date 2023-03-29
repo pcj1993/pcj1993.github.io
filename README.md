@@ -2,5 +2,5 @@
 Data Visualization Assignment 04
 Authors: Keegan Brown, Patrick Jones
 
-
-https://pcj1993.github.io/assignment04/
+Site page can be found at:
+https://pcj1993.github.io/
