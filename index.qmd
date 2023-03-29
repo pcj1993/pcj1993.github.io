@@ -23,16 +23,13 @@ library(RColorBrewer)
 
 
 #loading 
-data <- read_xpt("LLCP2021.XPT ")
+data <- read_xpt("LLCP2021.XPT")
 
 ```
 
 Paragraph describing the data here
 
-#Visualization 1 
-This line graph plots employment status with the quantity of reported Adverse Childhood Experiences (ACE). ACEs are strong predictors of poor health outcomes, increased incarceration rate, and lower education outcomes. Here, the unemployment is shown to sharply rise as the ACE score increases, suggesting appropriate intervention at a young age can have positive benefits for future labor market health. 
-
-
+#Visualization 1 This line graph plots employment status with the quantity of reported Adverse Childhood Experiences (ACE). ACEs are strong predictors of poor health outcomes, increased incarceration rate, and lower education outcomes. Here, the unemployment is shown to sharply rise as the ACE score increases, suggesting appropriate intervention at a young age can have positive benefits for future labor market health.
 
 ```{r}
 
@@ -375,9 +372,8 @@ plot1 +
 
 ```
 
+#Visualization 2 Along with ACEs, mental illness is strongly associated with poor employment and quality of life outcomes. Increased rates of depressive disorders can have significant impacts on a states' economy. In this graph, the average rate of reported diagnoses of depressive disorders are mapped by state. Oregon appears to have the highest diagnosis rates of depression, while North and Sotuh Dakota have the lowest.
 
-#Visualization 2
-Along with ACEs, mental illness is strongly associated with poor employment and quality of life outcomes. Increased rates of depressive disorders can have significant impacts on a states' economy. In this graph, the average rate of reported diagnoses of depressive disorders are mapped by state. Oregon appears to have the highest diagnosis rates of depression, while North and Sotuh Dakota have the lowest. 
 ```{r}
 
 
@@ -447,7 +443,8 @@ statesdata %>%
 
 #Visualization 3
 
-This heatmap shows that poor, elderly Americans experience more days of poor physical health than any other income and age group. It is expected that the old have worse physical health than the young, comparing elderly Americans of higher and lower incomes reveals that poverty intensifies the negative effects of aging on health. The starkness of this inequality emphasizes the need for targeted aid to the elderly poor, a population that is uniquely vulnerable in the United States. The Social Security and Medicare systems are pre-existing mechanisms that could be applied towards reducing health inequities among our nations’ seniors.
+This heatmap shows that poor, elderly Americans experience more days of poor physical health than any other income and age group. It is expected that the old have worse physical health than the young, comparing elderly Americans of higher and lower incomes reveals that poverty intensifies the negative effects of aging on health. The starkness of this inequality emphasizes the need for targeted aid to the elderly poor, a population that is uniquely vulnerable in the United States. The Social Security and Medicare systems are pre-existing mechanisms that could be applied towards reducing health inequities among our nations' seniors.
+
 ```{r}
 g3data <- data
 
@@ -514,7 +511,7 @@ geom_tile() +
 
 #Visualization 4
 
-This bar chart shows a negative association between income and mental health. Interestingly, the average reported days of mental distress increase fairly constantly as income decreases. This indicates that increased income leads to improved mental health outcomes regardless of ones’ current income. Boosting middle class incomes increases happiness about as much as increasing working class incomes, an effect that should be considered when crafting wage policy.
+This bar chart shows a negative association between income and mental health. Interestingly, the average reported days of mental distress increase fairly constantly as income decreases. This indicates that increased income leads to improved mental health outcomes regardless of ones' current income. Boosting middle class incomes increases happiness about as much as increasing working class incomes, an effect that should be considered when crafting wage policy.
 
 ```{r}
 g4data <- data
@@ -522,7 +519,9 @@ g4data <- data
 g4data <- g4data %>%
   filter(MENTHLTH <= 30) %>%
   group_by(INCOME3) %>%
-  summarize(mean_MENTHLTH = mean(MENTHLTH))
+  summarize(mean_MENTHLTH = mean(MENTHLTH))%>%
+  mutate(mean_MENTHLTH = round(mean_MENTHLTH, 
+                                digits = 0))
 
 g4data %>%
   filter(INCOME3 < 77) %>%
@@ -530,8 +529,12 @@ g4data %>%
              y = mean_MENTHLTH,
              fill = mean_MENTHLTH)) +
   geom_col() +
-  scale_fill_continuous(low = "#1097b8", 
-                        high = "#b83110",
+  geom_text(aes(label = mean_MENTHLTH), 
+            hjust = -.15,
+            size = 3,
+            ) +
+  scale_fill_continuous(low = "#bd9c3b", 
+                        high = "#2d6cc4",
                         guide = "none") +
   scale_x_continuous(breaks = c(1:11),
                    labels = c("Less than $10,000",
@@ -557,6 +560,4 @@ g4data %>%
                                     hjust = 1,
                                      vjust = 1,
                                     )) 
-  
-
 ```
